@@ -18,7 +18,7 @@ __plugin_meta__ = PluginMetadata(
     description="基于AI的聊天插件，支持大模型任意切换、上下文记忆、群聊智能参与、图片识别、MCP等功能",
     usage="使用px about命令获取插件信息，支持指令配置",
     type="application",
-    homepage="xxx",
+    homepage="https://github.com/whopxxx/nonebot-plugin-pxchat",
     supported_adapters={"~onebot.v11"},
 )
 
