@@ -546,8 +546,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "mcp", specifier = ">=1.16.0" },
-    { name = "nonebot-adapter-onebot", specifier = ">=2.4.6" },
-    { name = "nonebot2", specifier = ">=2.4.3" },
+    { name = "nonebot-adapter-onebot", specifier = ">=2.4.6,<3.0.0" },
+    { name = "nonebot2", specifier = ">=2.4.3,<3.0.0" },
     { name = "openai", specifier = ">=2.2.0" },
 ]
 

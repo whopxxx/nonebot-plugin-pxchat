@@ -7,10 +7,10 @@ authors = [{ name = "whopxx", email = "2074447320@qq.com" }]
 urls = { Repository = "https://github.com/whopxxx/nonebot-plugin-pxchat" }
 requires-python = ">=3.10"
 dependencies = [
-    "mcp>=1.16.0",
-    "nonebot-adapter-onebot>=2.4.6",
-    "nonebot2>=2.4.3",
+    "nonebot2>=2.4.3,<3.0.0",
+    "nonebot-adapter-onebot>=2.4.6,<3.0.0",
     "openai>=2.2.0",
+    "mcp>=1.16.0",
 ]
 
 [tool.nonebot]
