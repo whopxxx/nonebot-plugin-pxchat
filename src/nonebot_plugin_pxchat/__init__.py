@@ -1,30 +1,34 @@
-from nonebot import on_message, logger, get_driver
+from nonebot import on_message, logger, get_driver, require, get_plugin_config
 from nonebot.plugin import PluginMetadata
-from nonebot.adapters.onebot.v11 import MessageEvent, Bot, Message
+from nonebot.adapters.onebot.v11 import MessageEvent, Bot, Message, MessageSegment
 from .chat import should_reply_in_group, get_chat_reply_with_tools
 from .context import get_context, add_message, clear_context, load_contexts
 from .manager import chat_manager
 from .commands import *
 from .send2root import *
 from .image2txt import *
+from .config import *
 import asyncio
 import random
 import json
 from .mcp_manager import *
 from typing import Dict, Set
 
+require("nonebot_plugin_localstore")
+
 __plugin_meta__ = PluginMetadata(
     name="pxchat",
     description="基于AI的聊天插件，支持大模型任意切换、上下文记忆、群聊智能参与、图片识别、MCP等功能",
     usage="使用px about命令获取插件信息，支持指令配置",
     type="application",
-    homepage="https://github.com/whopxxx/nonebot-plugin-pxchat",
+    homepage="xxx",
     supported_adapters={"~onebot.v11"},
 )
 
 # 初始化管理器和上下文
 load_contexts()
-
+# 读取配置文件
+get_plugin_config(PluginConfig)
 # 创建消息处理器，不限制规则，在handle中自行判断
 chat = on_message(priority=50, block=False)
 
@@ -80,6 +84,9 @@ async def _(bot: Bot, event: MessageEvent):
     if not chat_manager.is_chat_enabled():
         return
     
+    if not chat_manager.get_super_users():
+        await chat.finish("请在配置文件中添加管理员账号")
+
     # 获取群聊ID
     group_id = getattr(event, "group_id", None)
     user_id = str(event.user_id)
@@ -177,14 +184,14 @@ async def _(bot: Bot, event: MessageEvent):
 # 检查
 async def event_proc(event: MessageEvent):
     # 检查图片识别功能是否开启
+    user_text = event.get_plaintext().strip()
+    recognition_msg = f"{user_text}\n"
     if chat_manager.is_image_recognition_enabled():
         # 检查消息中是否包含图片
         image_urls = []
         for seg in event.message:
             if seg.type == "image":
-                image_urls.append(seg.data.get("url"))        
-        user_text = event.get_plaintext().strip()
-        recognition_msg = f"{user_text}\n"
+                image_urls.append(seg.data.get("url"))
         # 如果包含图片，进行识别
         if image_urls:
             try:

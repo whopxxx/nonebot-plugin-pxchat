@@ -3,9 +3,10 @@ import os
 from typing import List, Dict, Any, Optional
 from nonebot import logger
 from nonebot.adapters.onebot.v11 import MessageEvent
+import nonebot_plugin_localstore as store
+from .config import config
 
-# 管理配置文件路径
-MANAGER_FILE = "px_chat_manager.json"
+MANAGER_FILE = store.get_plugin_config_file("px_chat_manager.json")
 
 class ChatManager:
     def __init__(self):
@@ -22,6 +23,8 @@ class ChatManager:
             except Exception as e:
                 logger.error(f"加载聊天管理器配置失败: {e}")
                 self._data = self._get_default_config()
+            self._data['super_users'] = list(config.pxchat_super_users)
+            self._data['mcp_servers'] = config.pxchat_mcp
         else:
             self._data = self._get_default_config()
             self._save_manager_config()
@@ -30,7 +33,7 @@ class ChatManager:
     def _get_default_config(self) -> Dict[str, Any]:
         """获取默认配置"""
         return {
-            "super_users": [],
+            "super_users": list(config.pxchat_super_users),
             "enabled_groups": [],
             "chat_enabled": True,
             "group_chat_probability": 1,  # 群活跃度基础值
@@ -41,23 +44,24 @@ class ChatManager:
             "current_image_recognition_config": 0,  # 当前图片识别配置索引
             "enable_search": False,   # 是否启用搜索功能
             "mcp_enabled": False,     # MCP功能总开关
-            "mcp_servers": {          # MCP服务器配置
-                # "web_search": {
-                #     "url": "https://dashscope.aliyuncs.com/api/v1/mcps/WebSearch/sse",
-                #     "headers": {
-                #         "Authorization": "Bearer you-key-here"
-                #     },
-                #     "enabled": True
-                # }
-                # 可以添加stdio类型的配置示例:
-                # "local_tool": {
-                #     "type": "stdio",
-                #     "command": "python",
-                #     "args": ["/path/to/mcp/server.py"],
-                #     "env": {"KEY": "value"},
-                #     "enabled": True
-                # }
-            }
+            "mcp_servers": config.pxchat_mcp,
+            # "mcp_servers": {          # MCP服务器配置
+            #     # "web_search": {
+            #     #     "url": "https://dashscope.aliyuncs.com/api/v1/mcps/WebSearch/sse",
+            #     #     "headers": {
+            #     #         "Authorization": "Bearer you-key-here"
+            #     #     },
+            #     #     "enabled": True
+            #     # }
+            #     # 可以添加stdio类型的配置示例:
+            #     # "local_tool": {
+            #     #     "type": "stdio",
+            #     #     "command": "python",
+            #     #     "args": ["/path/to/mcp/server.py"],
+            #     #     "env": {"KEY": "value"},
+            #     #     "enabled": True
+            #     # }
+            # }
         }
     
     def _save_manager_config(self):
@@ -170,25 +174,7 @@ class ChatManager:
     def is_super_user(self, user_id: str) -> bool:
         """检查用户是否为管理员"""
         return user_id in self._data.get("super_users", [])
-    
-    def add_super_user(self, user_id: str) -> bool:
-        """添加管理员"""
-        if user_id not in self._data.get("super_users", []):
-            if "super_users" not in self._data:
-                self._data["super_users"] = []
-            self._data["super_users"].append(user_id)
-            self._save_manager_config()
-            return True
-        return False
-    
-    def remove_super_user(self, user_id: str) -> bool:
-        """移除管理员"""
-        if user_id in self._data.get("super_users", []):
-            self._data["super_users"].remove(user_id)
-            self._save_manager_config()
-            return True
-        return False
-    
+
     def get_super_users(self) -> List[str]:
         """获取所有管理员"""
         return self._data.get("super_users", [])

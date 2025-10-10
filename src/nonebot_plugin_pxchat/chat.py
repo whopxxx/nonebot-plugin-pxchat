@@ -1,4 +1,4 @@
-from openai import OpenAI, BadRequestError
+from openai import BadRequestError, AsyncOpenAI
 from nonebot import logger
 from .manager import chat_manager
 from .mcp_manager import mcp_client  # 导入MCP管理器
@@ -72,7 +72,7 @@ async def get_chat_reply_with_tools(messages: list, is_group: bool = False) -> s
             logger.info("没有启用的MCP服务器，只使用本地工具")
         
         # 动态创建客户端
-        client = OpenAI(
+        client = AsyncOpenAI(
             api_key=ai_config.get("api_key", ""),
             base_url=ai_config.get("api_url", ""),
         )
@@ -233,7 +233,7 @@ async def get_chat_reply(messages: list, is_group: bool = False) -> str:
     
     try:
         # 动态创建客户端
-        client = OpenAI(
+        client = AsyncOpenAI(
             api_key=ai_config.get("api_key", ""),
             base_url=ai_config.get("api_url", ""),
         )
@@ -313,7 +313,7 @@ async def should_reply_in_group(messages: list) -> bool:
 只回复 "YES" 或 "NO"，不要其他内容。
 """
         
-        client = OpenAI(
+        client = AsyncOpenAI(
             api_key=ai_config.get("api_key", ""),
             base_url=ai_config.get("api_url", ""),
         )

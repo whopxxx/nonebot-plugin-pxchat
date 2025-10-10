@@ -14,7 +14,6 @@ async def check_super_user(event: MessageEvent) -> bool:
 
 # 命令定义 - 重新组织命令结构
 about_cmd = on_command("px about", aliases={"px help"}, rule=to_me(), priority=10, block=True)
-super_cmd = on_command("px super", rule=to_me(), priority=10, block=True)
 group_cmd = on_command("px group", rule=to_me(), priority=10, block=True)
 ai_cmd = on_command("px ai", rule=to_me(), priority=10, block=True)
 switch_cmd = on_command("px chat", rule=to_me(), priority=10, block=True)
@@ -65,49 +64,10 @@ PX Chat 管理命令
 • px prob - 查看触发概率
 • px prob set <0.0-1.0>
 
-👑 管理员管理
-• px super - 查看管理员
-• px super add/del <用户ID>
-
 使用 'px <命令>' 查看详细用法
         """.strip()
 
     await send_long_message("PX Chat 帮助", help_content, user_id=event.user_id, group_id=getattr(event, "group_id", None))
-@super_cmd.handle()
-async def handle_super_user(event: MessageEvent, args: Message = CommandArg()):
-    if not await check_super_user(event):
-        await super_cmd.finish("你没有权限")
-    
-    arg_text = args.extract_plain_text().strip()
-    
-    if not arg_text:
-        super_users = chat_manager.get_super_users()
-        if not super_users:
-            await super_cmd.finish("当前没有管理员")
-        
-        content = "👑 管理员列表\n\n" + "\n".join(super_users)
-        await send_long_message("管理员管理", content, user_id=event.user_id, group_id=getattr(event, "group_id", None))
-        return
-    
-    parts = arg_text.split()
-    if len(parts) < 2:
-        await super_cmd.finish("用法: px super add/del <用户ID>")
-    
-    action, target_user = parts[0], parts[1]
-    
-    if action == "add":
-        if chat_manager.add_super_user(target_user):
-            await super_cmd.finish(f"✅ 已添加用户 {target_user} 为管理员")
-        else:
-            await super_cmd.finish(f"⚠️ 用户 {target_user} 已是管理员")
-    elif action == "del":
-        if chat_manager.remove_super_user(target_user):
-            await super_cmd.finish(f"✅ 已移除用户 {target_user} 的管理员权限")
-        else:
-            await super_cmd.finish(f"⚠️ 用户 {target_user} 不是管理员")
-    else:
-        await super_cmd.finish("用法: px super add/del <用户ID>")
-
 
 @group_cmd.handle()
 async def handle_group_manage(event: MessageEvent, args: Message = CommandArg()):
@@ -322,7 +282,7 @@ async def handle_status(event: MessageEvent):
     
     # 概率设置
     probability = chat_manager.get_group_chat_probability()
-    status_info.append(f"📈 触发概率: {probability:.1%}")
+    status_info.append(f"📈 群活跃度基础值: {probability:.1%}")
     status_info.append("")
     
     # 群组信息

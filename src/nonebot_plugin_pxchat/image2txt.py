@@ -1,4 +1,4 @@
-from openai import OpenAI
+from openai import AsyncOpenAI
 from nonebot import logger
 from .manager import chat_manager
 import asyncio
@@ -19,37 +19,35 @@ async def recognize_image(image_url: str, prompt: str = "请简洁描述这张�
     
     try:
         # 动态创建客户端
-        client = OpenAI(
+        client = AsyncOpenAI(
             api_key=ai_config.get("api_key", ""),
             base_url=ai_config.get("api_url", ""),
         )
         
-        def sync_call():
-            completion = client.chat.completions.create(
-                model=ai_config.get("model", ""),
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": image_url,
-                                    "detail": "high"
-                                }
-                            },
-                            {
-                                "type": "text",
-                                "text": prompt
+        completion = await client.chat.completions.create(
+            model=ai_config.get("model", ""),
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": image_url,
+                                "detail": "high"
                             }
-                        ]
-                    }
-                ],
-                max_tokens=1000
-            )
-            return completion.choices[0].message.content
-
-        result = await asyncio.to_thread(sync_call)
+                        },
+                        {
+                            "type": "text",
+                            "text": prompt
+                        }
+                    ]
+                }
+            ],
+            max_tokens=1000
+        )
+        
+        result = completion.choices[0].message.content
 
         if not result:
             raise Exception("图片识别返回了空结果")

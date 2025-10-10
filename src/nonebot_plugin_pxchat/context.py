@@ -1,8 +1,9 @@
 import json
 import os
 from typing import List, Dict
+import nonebot_plugin_localstore as store
 
-CONTEXT_FILE = "px_chat_context.json"
+CONTEXT_FILE = store.get_plugin_data_file("px_chat_context.json")
 MAX_CONTEXT_LENGTH = 20  # 每个对话最大消息数
 
 # { "user_id_or_group_id": [{"role": "user|assistant|system", "content": "..."}] }
