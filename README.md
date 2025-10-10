@@ -56,7 +56,7 @@ plugins = ["nonebot_plugin_pxchat"]
 | pxchat_mcp |  否   |   无   | mcp服务配置 |
 
 
-配置实例
+配置示例
 ```shell
 pxchat_super_users=["123456"]
 
