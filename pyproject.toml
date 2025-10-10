@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [tool.nonebot]
-plugins = ["nonebot_plugin_pxchat"]
+plugins = ["nonebot_plugin_pxchat", "nonebot_plugin_localstore"]
 
 [[tool.uv.index]]
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
