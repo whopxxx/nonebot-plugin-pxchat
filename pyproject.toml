@@ -1,6 +1,6 @@
 [project]
 name = "nonebot-plugin-pxchat"
-version = "1.0.1"
+version = "1.0.2"
 description = "基于AI大模型的聊天机器人，支持大模型api任意切换、上下文记忆、群聊智能参与、图片识别、MCP等功能"
 readme = "README.md"
 authors = [{ name = "whopxx", email = "2074447320@qq.com" }]
@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [tool.nonebot]
-plugins = ["nonebot_plugin_pxchat", "nonebot_plugin_localstore"]
+plugins = ["nonebot_plugin_pxchat"]
 
 [[tool.uv.index]]
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"

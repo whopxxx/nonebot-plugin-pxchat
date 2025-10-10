@@ -1,4 +1,5 @@
 from nonebot import on_message, logger, get_driver, require, get_plugin_config
+require("nonebot_plugin_localstore")
 from nonebot.plugin import PluginMetadata
 from nonebot.adapters.onebot.v11 import MessageEvent, Bot, Message, MessageSegment
 from .chat import should_reply_in_group, get_chat_reply_with_tools
@@ -13,8 +14,6 @@ import random
 import json
 from .mcp_manager import *
 from typing import Dict, Set
-
-require("nonebot_plugin_localstore")
 
 __plugin_meta__ = PluginMetadata(
     name="pxchat",
