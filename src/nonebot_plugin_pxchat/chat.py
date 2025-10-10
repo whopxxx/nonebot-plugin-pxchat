@@ -77,24 +77,22 @@ async def get_chat_reply_with_tools(messages: list, is_group: bool = False) -> s
             base_url=ai_config.get("api_url", ""),
         )
         
-        # 第一阶段：Function Call处理（使用副本）
-        def sync_function_call():
-            return client.chat.completions.create(
-                model=ai_config.get("model", ""),
-                messages=[
-                    {
-                        "role": "user",
-                        "content": "请仅判断是否需要调用工具，若需要则直接调用，不需要则回复NO\n" +
-                                    f"问题: {processing_messages[-1]['content']}"
-                    }
-                ],
-                tools=all_tools,
-                tool_choice="auto",
-                max_tokens=128,
-            )
+        # 第一阶段：Function Call处理（使用异步调用）
+        logger.info("开始工具调用判断")
+        response = await client.chat.completions.create(
+            model=ai_config.get("model", ""),
+            messages=[
+                {
+                    "role": "user",
+                    "content": "请仅判断是否需要调用工具，若需要则直接调用，不需要则回复NO\n" +
+                                f"问题: {processing_messages[-1]['content']}"
+                }
+            ],
+            tools=all_tools,
+            tool_choice="auto",
+            max_tokens=128,
+        )
         
-        # 调用模型判断是否需要工具调用
-        response = await asyncio.to_thread(sync_function_call)
         message = response.choices[0].message
         tool_calls = message.tool_calls
         
@@ -238,27 +236,24 @@ async def get_chat_reply(messages: list, is_group: bool = False) -> str:
             base_url=ai_config.get("api_url", ""),
         )
         
-        def sync_call():
-            # 构建请求参数
-            request_params = {
-                "model": ai_config.get("model", ""),
-                "messages": [{"role": "system", "content": get_system_prompt(is_group)}] + messages,
-                "response_format": {
-                    'type': 'json_object'
-                }
+        # 构建请求参数
+        request_params = {
+            "model": ai_config.get("model", ""),
+            "messages": [{"role": "system", "content": get_system_prompt(is_group)}] + messages,
+            "response_format": {
+                'type': 'json_object'
             }
-            
-            # 只有在搜索功能启用时才添加搜索参数
-            if chat_manager.is_search_enabled():
-                request_params["extra_body"] = {
-                    "enable_search": True,
-                    "search_options": {"forced_search": True}
-                }
-            
-            completion = client.chat.completions.create(**request_params)
-            return completion
-
-        reply_obj = await asyncio.to_thread(sync_call)
+        }
+        
+        # 只有在搜索功能启用时才添加搜索参数
+        if chat_manager.is_search_enabled():
+            request_params["extra_body"] = {
+                "enable_search": True,
+                "search_options": {"forced_search": True}
+            }
+        
+        # 直接使用异步调用
+        reply_obj = await client.chat.completions.create(**request_params)
         reply = reply_obj.choices[0].message.content
         
         # 获取并记录Token消耗
@@ -317,6 +312,7 @@ async def should_reply_in_group(messages: list) -> bool:
             api_key=ai_config.get("api_key", ""),
             base_url=ai_config.get("api_url", ""),
         )
+        
         judge_content = []
         for msg in messages[-10:]:
             if msg["role"] == "user":
@@ -326,15 +322,12 @@ async def should_reply_in_group(messages: list) -> bool:
                 judge_content.append(f"你(px)回复说: {data.get('reply', [''])}")
         content = "\n".join(judge_content)
         
-        def sync_call():
-            completion = client.chat.completions.create(
-                model=ai_config.get("model", ""),
-                messages=[{"role": "system", "content": chat_manager.get_personality() + judgment_prompt}, {"role": "user", "content": "群聊记录\n" + content}],
-                max_tokens=10
-            )
-            return completion
-
-        completion_obj = await asyncio.to_thread(sync_call)
+        completion_obj = await client.chat.completions.create(
+            model=ai_config.get("model", ""),
+            messages=[{"role": "system", "content": chat_manager.get_personality() + judgment_prompt}, {"role": "user", "content": "群聊记录\n" + content}],
+            max_tokens=10
+        )
+        
         judgment = completion_obj.choices[0].message.content
 
         # 获取并记录Token消耗
